@@ -25,7 +25,11 @@ SECRET_KEY = "django-insecure-=cjp3f29h$27sm+0s!bysfh+qa*=ypv-z!31qo&rqb9g493h-_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "b-concurso.kdoshstore.com",
+    "localhost",
+    "127.0.0.1",
+]
 
 
 # Application definition
