@@ -18,6 +18,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from .views import RegisterView, LoginView, ProfileView
+from candidates.views import CandidateListView, ResultsView
+from votes.views import VoteView
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
@@ -31,6 +33,11 @@ urlpatterns = [
     path("login/", LoginView.as_view()),
     path("register/", RegisterView.as_view()),
     path("profile/", ProfileView.as_view()),
+    # Candidates API
+    path("api/candidates/", CandidateListView.as_view(), name="candidates-list"),
+    path("api/results/", ResultsView.as_view(), name="results"),
+    # Votes API
+    path("api/vote/", VoteView.as_view(), name="vote"),
     # API Documentation
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
