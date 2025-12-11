@@ -1,4 +1,4 @@
-#!/Users/wild/Desktop/concurso/venv/bin/python3.11
+#!/home/kdoshstore-b-concurso/htdocs/b-concurso/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
