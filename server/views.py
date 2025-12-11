@@ -63,32 +63,70 @@ class LoginView(APIView):
 class RegisterView(APIView):
     """
     Vista de registro con formulario HTML en la Browsable API.
-    Selecciona 'HTML form' en el dropdown de Media type para ver el formulario.
+    Campos: username, email, password, dni
     """
 
-    serializer_class = UserSerializer
+    from .serializers import RegisterSerializer
+
+    serializer_class = RegisterSerializer
 
     def get(self, request):
-        return Response({"message": "Send POST with username, email, and password"})
+        return Response(
+            {"message": "Send POST with username, email, password, and dni"}
+        )
 
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
+        from .serializers import RegisterSerializer
+        from .models import Profile
 
-        if serializer.is_valid():
-            serializer.save()
+        serializer = RegisterSerializer(data=request.data)
 
-            user = User.objects.get(username=request.data["username"])
-            user.set_password(request.data["password"])
-            user.save()
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            token = Token.objects.create(user=user)
+        data = serializer.validated_data
 
+        # Check if user or DNI already exists
+        if User.objects.filter(username=data["username"]).exists():
             return Response(
-                {"token": token.key, "user": serializer.data},
-                status=status.HTTP_201_CREATED,
+                {"error": "Username already exists"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if User.objects.filter(email=data["email"]).exists():
+            return Response(
+                {"error": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if Profile.objects.filter(dni=data["dni"]).exists():
+            return Response(
+                {"error": "DNI already exists"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Create user
+        user = User.objects.create_user(
+            username=data["username"],
+            email=data["email"],
+            password=data["password"],
+        )
+
+        # Create profile with DNI
+        Profile.objects.create(user=user, dni=data["dni"])
+
+        # Create token
+        token = Token.objects.create(user=user)
+
+        return Response(
+            {
+                "token": token.key,
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "dni": data["dni"],
+                },
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class ProfileView(APIView):
