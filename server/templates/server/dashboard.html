@@ -1,0 +1,113 @@
+{% extends 'server/base.html' %}
+
+{% block title %}Dashboard - Panel de Control{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="header">
+            <div>
+                <h1 style="font-size: 1.75rem; margin-bottom: 0.25rem;">🗳️ Panel de Votación</h1>
+                <p style="color: var(--text-muted);">Bienvenido, {{ user.username }}</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span class="status-badge {% if voting_config.is_active %}status-active{% else %}status-inactive{% endif %}">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: currentColor;"></span>
+                    {% if voting_config.is_active %}Votación Activa{% else %}Votación Detenida{% endif %}
+                </span>
+                <a href="{% url 'dashboard-logout' %}" class="btn" style="background: var(--border);">Cerrar Sesión</a>
+            </div>
+        </div>
+        
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        
+        <!-- Control de Votación -->
+        <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+            <form method="post" action="{% url 'dashboard-start-voting' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success" {% if voting_config.is_active %}disabled{% endif %}>
+                    ▶️ Iniciar Votación
+                </button>
+            </form>
+            <form method="post" action="{% url 'dashboard-stop-voting' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger" {% if not voting_config.is_active %}disabled{% endif %}>
+                    ⏹️ Detener Votación
+                </button>
+            </form>
+        </div>
+        
+        <!-- Estadísticas -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+            <div style="background: var(--bg-dark); padding: 1.5rem; border-radius: 12px; text-align: center;">
+                <div style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 0.5rem;">Total Votos</div>
+                <div class="votes-num">{{ total_votes }}</div>
+            </div>
+            <div style="background: var(--bg-dark); padding: 1.5rem; border-radius: 12px; text-align: center;">
+                <div style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 0.5rem;">Candidatas</div>
+                <div class="votes-num">{{ candidates|length }}</div>
+            </div>
+            <div style="background: var(--bg-dark); padding: 1.5rem; border-radius: 12px; text-align: center;">
+                <div style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 0.5rem;">Estado</div>
+                <div class="votes-num" style="color: {% if voting_config.is_active %}var(--success){% else %}var(--danger){% endif %};">
+                    {% if voting_config.is_active %}ACTIVA{% else %}INACTIVA{% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tabla de Candidatas -->
+        <h2 style="font-size: 1.25rem; margin-bottom: 1rem;">📊 Resultados por Candidata</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 50px;">#</th>
+                    <th>Candidata</th>
+                    <th>Slug</th>
+                    <th style="text-align: right;">Votos</th>
+                    <th style="text-align: right;">%</th>
+                    <th style="width: 200px;">Progreso</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for candidate in candidates %}
+                <tr>
+                    <td style="font-weight: 600; color: var(--text-muted);">{{ forloop.counter }}</td>
+                    <td style="font-weight: 600;">{{ candidate.name }}</td>
+                    <td style="color: var(--text-muted); font-family: monospace;">{{ candidate.slug }}</td>
+                    <td style="text-align: right;">
+                        <span class="votes-num" style="font-size: 1.125rem;">{{ candidate.votes }}</span>
+                    </td>
+                    <td style="text-align: right; color: var(--text-muted);">{{ candidate.percentage }}%</td>
+                    <td>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ candidate.percentage }}%;"></div>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                        No hay candidatas registradas
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        {% if voting_config.started_at %}
+        <div style="margin-top: 2rem; color: var(--text-muted); font-size: 0.875rem;">
+            <p>🕐 Inicio: {{ voting_config.started_at }}</p>
+            {% if voting_config.ended_at %}
+            <p>🏁 Fin: {{ voting_config.ended_at }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

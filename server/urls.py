@@ -17,7 +17,12 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-from .views import RegisterView, LoginView, ProfileView
+from .views import (
+    RegisterView, LoginView, ProfileView, 
+    VotingStartView, VotingStopView, VotingStatusView,
+    dashboard_login, dashboard_logout, dashboard, 
+    dashboard_start_voting, dashboard_stop_voting
+)
 from candidates.views import CandidateListView, ResultsView
 from votes.views import VoteView
 from drf_spectacular.views import (
@@ -38,6 +43,16 @@ urlpatterns = [
     path("api/results/", ResultsView.as_view(), name="results"),
     # Votes API
     path("api/vote/", VoteView.as_view(), name="vote"),
+    # Voting Control API
+    path("api/voting/status/", VotingStatusView.as_view(), name="voting-status"),
+    path("api/voting/start/", VotingStartView.as_view(), name="voting-start"),
+    path("api/voting/stop/", VotingStopView.as_view(), name="voting-stop"),
+    # Dashboard (HTML Views)
+    path("dashboard/", dashboard, name="dashboard"),
+    path("dashboard/login/", dashboard_login, name="dashboard-login"),
+    path("dashboard/logout/", dashboard_logout, name="dashboard-logout"),
+    path("dashboard/start-voting/", dashboard_start_voting, name="dashboard-start-voting"),
+    path("dashboard/stop-voting/", dashboard_stop_voting, name="dashboard-stop-voting"),
     # API Documentation
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),

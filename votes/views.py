@@ -48,6 +48,22 @@ class VoteView(APIView):
         tags=["Votación"],
     )
     def post(self, request):
+        from server.models import VotingConfig
+
+        # Verificar si la votación está activa
+        config = VotingConfig.get_config()
+        if not config.is_active:
+            return Response(
+                {
+                    "error": "La votación no está activa en este momento",
+                    "voting_status": {
+                        "is_active": config.is_active,
+                        "ended_at": config.ended_at,
+                    },
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         # Verificar si ya votó
         if hasattr(request.user, "vote"):
             return Response(

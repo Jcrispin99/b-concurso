@@ -21,3 +21,12 @@ class RegisterSerializer(serializers.Serializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
+
+
+class VotingConfigSerializer(serializers.Serializer):
+    """Serializer para el estado de la votación"""
+
+    is_active = serializers.BooleanField(read_only=True)
+    started_at = serializers.DateTimeField(read_only=True)
+    ended_at = serializers.DateTimeField(read_only=True)
+    message = serializers.CharField(read_only=True)
