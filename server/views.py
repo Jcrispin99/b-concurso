@@ -133,6 +133,7 @@ class ProfileView(APIView):
     """
     Vista de perfil protegida por token.
     Requiere header: Authorization: Token <tu_token>
+    Muestra datos del usuario y su voto (si existe).
     """
 
     from rest_framework.authentication import TokenAuthentication
@@ -143,6 +144,16 @@ class ProfileView(APIView):
 
     def get(self, request):
         user = request.user
+        
+        # Obtener información del voto si existe
+        vote_info = None
+        if hasattr(user, "vote"):
+            vote_info = {
+                "candidate_name": user.vote.candidate.name,
+                "candidate_slug": user.vote.candidate.slug,
+                "voted_at": user.vote.voted_at,
+            }
+        
         return Response(
             {
                 "id": user.id,
@@ -151,6 +162,8 @@ class ProfileView(APIView):
                 "first_name": user.first_name,
                 "last_name": user.last_name,
                 "date_joined": user.date_joined,
+                "vote": vote_info,
+                "has_voted": vote_info is not None,
             }
         )
 
